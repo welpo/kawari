@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Compare text and visualize differences with word-level highlighting. Privacy-first diff tool that runs entirely in your browser.">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json?h=2c311878">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="kawari">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="kawari · Private diffs. Shareable URLs.">
+  <meta name="twitter:description" content="Compare text and visualize differences with word-level highlighting. Privacy-first diff tool that runs entirely in your browser.">
+  <meta name="twitter:image" content="https://diff.osc.garden/social_card.jpg">
+
+  <!-- OpenGraph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://diff.osc.garden">
+  <meta property="og:title" content="kawari · Private diffs. Shareable URLs.">
+  <meta property="og:description" content="Compare text and visualize differences with word-level highlighting. Privacy-first diff tool that runs entirely in your browser.">
+  <meta property="og:image" content="https://diff.osc.garden/social_card.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="670">
+  <meta property="og:locale" content="en">
+  <meta property="og:site_name" content="kawari">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+  <!-- Colours -->
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#0d9488">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#5f9e97">
+
+  <!-- CSP -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self';
+    style-src 'self';
+    connect-src 'self';
+    img-src 'self' data:;
+    font-src 'self' data:;
+    manifest-src 'self';
+    worker-src 'self';
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+  ">
+
+  <title>kawari · Private diffs. Shareable URLs.</title>
+  <link rel="stylesheet" href="styles.css?h=d49c4da8">
+</head>
+<body>
+  <div class="content-container">
+    <header>
+      <h1><ruby>かわり<rt>kawari</rt></ruby></h1>
+      <p>Private diffs. Shareable URLs.</p>
+      <nav class="toolbar" aria-label="Diff tools">
+        <div class="toolbar-group toolbar-group-edit">
+          <button id="editBtn" class="btn-secondary glass">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.25.25 0 00.108-.064l6.286-6.286z"/></svg>
+            <span class="btn-label">Edit</span>
+          </button>
+        </div>
+        <div class="toolbar-group toolbar-group-view">
+          <div class="view-toggle glass" role="group" aria-label="View mode">
+            <button type="button" class="toggle-btn" id="btnUnified" aria-pressed="false">Unified</button>
+            <button type="button" class="toggle-btn active" id="btnSideBySide" aria-pressed="true">Split</button>
+          </div>
+          <div class="dropdown-container">
+            <button id="normalizeBtn" class="btn-secondary glass" aria-expanded="false" aria-controls="normalizeDropdown">
+              <svg viewBox="0 0 32 32" fill="currentColor"><path d="m5.24 22.51l1.43-1.42A14.06 14.06 0 0 1 3.07 16C5.1 10.93 10.7 7 16 7a12.4 12.4 0 0 1 4 .72l1.55-1.56A14.7 14.7 0 0 0 16 5A16.69 16.69 0 0 0 1.06 15.66a1 1 0 0 0 0 .68a16 16 0 0 0 4.18 6.17"/><path d="M12 15.73a4 4 0 0 1 3.7-3.7l1.81-1.82a6 6 0 0 0-7.33 7.33Zm18.94-.07a16.4 16.4 0 0 0-5.74-7.44L30 3.41L28.59 2L2 28.59L3.41 30l5.1-5.1A15.3 15.3 0 0 0 16 27a16.69 16.69 0 0 0 14.94-10.66a1 1 0 0 0 0-.68M20 16a4 4 0 0 1-6 3.44L19.44 14a4 4 0 0 1 .56 2m-4 9a13.05 13.05 0 0 1-6-1.58l2.54-2.54a6 6 0 0 0 8.35-8.35l2.87-2.87A14.54 14.54 0 0 1 28.93 16C26.9 21.07 21.3 25 16 25"/></svg>
+              <span class="btn-label">Ignore…</span>
+            </button>
+            <div class="dropdown-panel glass" id="normalizeDropdown" role="dialog" aria-label="Ignore options">
+              <div class="dropdown-title mobile-only">Ignore differences in…</div>
+              <label><input type="checkbox" id="normTrailing"> Trailing space</label>
+              <label><input type="checkbox" id="normAmount"> Extra spaces</label>
+              <label><input type="checkbox" id="normAll"> All whitespace</label>
+              <label><input type="checkbox" id="normQuotes"> Quote type (" vs ')</label>
+            </div>
+          </div>
+        </div>
+        <div class="toolbar-group toolbar-group-actions">
+          <div class="dropdown-container">
+            <button id="downloadPatchBtn" class="btn-secondary glass" aria-expanded="false" aria-controls="patchDropdown">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 011 12.25v-2.5a.75.75 0 011.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 00.25-.25v-2.5a.75.75 0 011.5 0v2.5A1.75 1.75 0 0113.25 14H2.75z"/><path d="M7.25 7.689V2a.75.75 0 011.5 0v5.689l1.97-1.969a.749.749 0 111.06 1.06l-3.25 3.25a.749.749 0 01-1.06 0L4.22 6.78a.749.749 0 111.06-1.06l1.97 1.969z"/></svg>
+              <span class="btn-label">Download .patch</span>
+            </button>
+            <div class="dropdown-panel glass" id="patchDropdown" role="dialog" aria-label="Enter file path">
+              <label for="patchFilename">File path (relative to repo root)</label>
+              <input type="text" id="patchFilename" placeholder="src/components/App.js">
+              <button id="patchConfirmBtn" type="button">Download</button>
+            </div>
+          </div>
+          <div class="share-container">
+            <button id="copyLinkBtn" class="btn-secondary glass">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"/></svg>
+              <span class="btn-label">Share</span>
+            </button>
+            <span id="urlWarning" class="url-warning"></span>
+          </div>
+        </div>
+      </nav>
+      <input type="text" id="diffName" class="diff-name-input" placeholder="Name this diff" maxlength="100" aria-label="Diff name">
+    </header>
+    <noscript>
+      <link rel="stylesheet" href="nojs.css">
+      <p class="nojs-message">Hello! It'd be cool if we could do diffs without JavaScript but… alas! You can peep the <a href="https://github.com/welpo/kawari">source code</a> if you'd like, but to use the app you'll need to enable JS. Cheers~</p>
+    </noscript>
+    <div class="inputs-grid">
+      <div class="input-group">
+        <div class="input-header">
+          <label class="input-label" for="original">Original</label>
+          <button type="button" id="clearOriginalBtn" class="clear-input-btn" title="Clear" aria-label="Clear original text" tabindex="-1">×</button>
+        </div>
+        <textarea id="original" placeholder="Paste or drag the file with original text…" autofocus></textarea>
+      </div>
+      <div class="input-group">
+        <div class="input-header">
+          <label class="input-label" for="modified">Modified</label>
+          <button type="button" id="clearModifiedBtn" class="clear-input-btn" title="Clear" aria-label="Clear modified text" tabindex="-1">×</button>
+        </div>
+        <textarea id="modified" placeholder="Paste or drag the file with modified text…"></textarea>
+      </div>
+    </div>
+    <button id="compareBtn" class="compare-btn glass">Compare</button>
+    <div class="stats" id="stats"></div>
+    <div class="stats-split" id="statsSplit">
+      <div class="left">
+        <span class="pills" id="leftPills"></span>
+        <button id="copyOriginalBtn" class="copy-side-btn glass" type="button" title="Copy original text" aria-label="Copy original text">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/></svg>
+          <span class="btn-label">Copy</span>
+        </button>
+      </div>
+      <div class="right">
+        <span class="pills" id="rightPills"></span>
+        <button id="copyModifiedBtn" class="copy-side-btn glass" type="button" title="Copy modified text" aria-label="Copy modified text">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/></svg>
+          <span class="btn-label">Copy</span>
+        </button>
+      </div>
+    </div>
+    <div class="diff-wrapper">
+      <div class="diff" id="output"></div>
+      <div class="minimap" id="minimap">
+        <canvas id="minimapCanvas"></canvas>
+        <div class="viewport" id="minimapViewport"></div>
+      </div>
+    </div>
+    <footer class="app-footer">
+      <p><span>Made with <span class="heart">♥</span> by <a href="https://osc.garden" rel="author">Óscar</a></span><span class="separator">•</span><a href="https://github.com/welpo/kawari" rel="source">View source code</a><span class="separator">•</span><a href="https://github.com/welpo/kawari/commit/%%COMMIT%%">%%COMMIT%%</a></p>
+    </footer>
+  </div>
+  <script type="module" src="app.js?h=2ed1a190"></script>
+  <script src="sw-registration.js?h=bfa8fde5" defer></script>
+</body>
+</html>

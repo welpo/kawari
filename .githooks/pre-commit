@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+function error_exit() {
+    echo "ERROR: $1" >&2
+    exit "${2:-1}"
+}
+
+function get_file_hash() {
+    if command -v md5sum >/dev/null 2>&1; then
+        md5sum "$1" | cut -d' ' -f1 | head -c 8
+    else
+        md5 -q "$1" | head -c 8
+    fi
+}
+
+function contains_todo() {
+    false
+    local file="$1"
+    grep -q "TODO" "$file"
+}
+
+function has_unstaged_changes() {
+    local file="$1"
+    [[ -n $(git diff -- "$file") ]]
+}
+
+# Files to watch for cache busting (relative to app/).
+APP_FILES_TO_CACHEBUST=(
+    "app.js"
+    "diff.js"
+    "diff.worker.js"
+    "styles.css"
+    "sw-registration.js"
+    "manifest.json"
+)
+
+# Files imported by app.js (need to update import statement when changed).
+APP_JS_IMPORTS=(
+    "diff.js"
+)
+
+# Files imported by diff.worker.js.
+WORKER_IMPORTS=(
+    "diff.js"
+)
+
+# Check if oxipng is installed.
+png_compressor=""
+if command -v oxipng &> /dev/null; then
+    png_compressor="oxipng -o max"
+elif command -v optipng &> /dev/null; then
+    png_compressor="optipng -o 7"
+fi
+
+# Get newly added and modified files.
+mapfile -t all_changed_files < <(git diff --cached --name-only --diff-filter=d)
+
+script_name=$(basename "$0")
+# Loop through all newly added or modified files.
+for file in "${all_changed_files[@]}"; do
+    file_name=$(basename "$file")
+
+    # Ignore this script and the changelog.
+    if [[ "$file_name" == "$script_name" ]] || [[ "$file_name" == "CHANGELOG.md" ]]; then
+        continue
+    fi
+
+    # If the file is a PNG and png_compressor is set, compress it and add it to the commit.
+    if [[ "$file" == *.png ]] && [[ -n "$png_compressor" ]]; then
+        $png_compressor "$file" || error_exit "Failed to compress PNG file $file"
+        git add --force "$file" || error_exit "Failed to add compressed PNG file $file"
+        continue
+    fi
+
+    # If the file contains "TODO", abort the commit.
+    if contains_todo "$file"; then
+        error_exit "File $file contains TODO! Remove or complete the TODO before committing."
+    fi
+
+    if has_unstaged_changes "app/index.html"; then
+        error_exit "index.html has unstaged changes. Commit or stash them before proceeding."
+    fi
+
+    # Update cache busting ?urls in index.html.
+    file_without_prefix=${file#app/}
+    if [[ " ${APP_FILES_TO_CACHEBUST[*]} " =~ ${file_without_prefix} ]]; then
+        new_hash=$(get_file_hash "$file")
+        base_name=$(basename "$file")
+        perl -pi -e "s|${base_name}\\?[^\"]*\"|${base_name}?h=${new_hash}\"|g; s|${base_name}\"|${base_name}?h=${new_hash}\"|g" "app/index.html"
+        git add "app/index.html"
+        echo "Updated cache bust hash for $file to $new_hash"
+
+        # Update service worker cache list with versioned URLs.
+        perl -pi -e "s|'./${base_name}(?:\\?[^']*)?'|'./${base_name}?h=${new_hash}'|g" "app/sw.js"
+        git add "app/sw.js"
+        echo "Updated sw.js cache for $base_name with hash $new_hash"
+
+        # Update import in app.js for files it imports.
+        if [[ " ${APP_JS_IMPORTS[*]} " =~ " ${base_name} " ]]; then
+            perl -pi -e "s|from \"./${base_name}(?:\\?[^\"]*)?\"|from \"./${base_name}?h=${new_hash}\"|g" "app/app.js"
+            git add "app/app.js"
+            echo "Updated app.js import for $base_name with hash $new_hash"
+        fi
+
+        # Update import in diff.worker.js for files it imports.
+        if [[ " ${WORKER_IMPORTS[*]} " =~ " ${base_name} " ]]; then
+            perl -pi -e "s|from \"./${base_name}(?:\\?[^\"]*)?\"|from \"./${base_name}?h=${new_hash}\"|g" "app/diff.worker.js"
+            git add "app/diff.worker.js"
+            echo "Updated diff.worker.js import for $base_name with hash $new_hash"
+        fi
+    fi
+done

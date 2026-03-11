@@ -1,0 +1,5 @@
+tabs:	here	and	here
+unicode: café résumé naïve
+symbols: @#$%^&*()
+quotes: "double" and 'single'
+backslash: C:\path\to\file

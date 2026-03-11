@@ -1,0 +1,5 @@
+tabs:	here	and	there
+unicode: café résumé naïve
+symbols: @#$%^&*()!
+quotes: "double" and 'single'
+backslash: C:\path\to\different

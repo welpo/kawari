@@ -1,0 +1,4 @@
+normal line
+\ this starts with backslash modified
+\ No newline at end of file fake
+another line changed

@@ -3,7 +3,7 @@ const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './styles.css?h=d49c4da8',
-  './app.js?h=2ed1a190',
+  './app.js?h=24423efd',
   './diff.js?h=52ba9aad',
   './diff.worker.js?h=eeed30b0',
   './manifest.json?h=2c311878',

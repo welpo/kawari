@@ -36,6 +36,7 @@ const diffNameInput = document.getElementById("diffName");
 
 const STORAGE_KEY = "diffSettings";
 const MIN_COLLAPSE_LINES = 5;
+const NO_COLLAPSE_THRESHOLD = 42;
 const TRUNCATE_LEN = 40;
 const COPIED_TEXT_SHOWN_MS = 1500;
 const URL_WARN_THRESHOLD = 4000;
@@ -352,16 +353,17 @@ function renderSideBySide(diff) {
 function groupDiff(diff) {
   const hunks = Diff.buildHunks(diff);
   if (hunks.length === 0) {
-    // Identical input and output; do not collapse lines.
     return [{ type: "context", lines: diff }];
   }
+  const skipCollapse = diff.length <= NO_COLLAPSE_THRESHOLD;
   const segments = [];
   let cursor = 0;
   for (let h = 0; h < hunks.length; h++) {
     const hunk = hunks[h];
     if (cursor < hunk.start) {
       const count = hunk.start - cursor;
-      const type = count >= MIN_COLLAPSE_LINES ? "collapsed" : "context";
+      const type =
+        !skipCollapse && count >= MIN_COLLAPSE_LINES ? "collapsed" : "context";
       segments.push({
         type,
         lines: diff.slice(cursor, hunk.start),
@@ -386,7 +388,8 @@ function groupDiff(diff) {
   }
   if (cursor < diff.length) {
     const count = diff.length - cursor;
-    const type = count >= MIN_COLLAPSE_LINES ? "collapsed" : "context";
+    const type =
+      !skipCollapse && count >= MIN_COLLAPSE_LINES ? "collapsed" : "context";
     segments.push({
       type,
       lines: diff.slice(cursor),
